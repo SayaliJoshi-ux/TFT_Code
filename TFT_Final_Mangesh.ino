@@ -251,6 +251,8 @@ void calc_Values(int z)
         btn[7].drawButton();
        if(btn[8].justReleased())
         btn[8].drawButton();
+        if(btn[9].justReleased())
+        btn[9].drawButton();
       if(btn[10].justReleased())
         btn[10].drawButton();   
     if (btn[0].justPressed()) {
@@ -353,7 +355,7 @@ void calc_Values(int z)
           tft.setCursor(20,50);
           tft.setTextSize(2);
           tft.setTextColor(WHITE);
-          tft.print("Wrong!!");
+          tft.print("###");
           delay(3000);
           Channel=0;
           tft.fillRect(6, 6, 200,60, BLACK);
@@ -795,7 +797,7 @@ tft.fillScreen(BLACK); //Set Background Color with BLACK
     tft.setTextColor(RED);
     tft.print(":");
     tft.fillRect(190,203,80,30,BLACK);
-    Timer_Countdown();
+    
 }
 void Timer_Countdown()
 {
@@ -813,10 +815,14 @@ void Timer_Countdown()
  btn_Stop.press(down&&btn_Stop.contains(pixel_x,pixel_y));
 if (btn_Stop.justReleased())
        btn_Stop.drawButton();
- else if (btn_Stop.justPressed())
+ if (btn_Stop.justPressed())
     {
+      Timer1.stop();
+      tft.fillScreen(BLACK);
       Main_page();
       Channel=0;min_counter=0;sec_counter=0;
+//Code for stop button//
+      
     }
   }
 }
