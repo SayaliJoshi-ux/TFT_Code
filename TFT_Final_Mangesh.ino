@@ -31,8 +31,8 @@ TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 #define BLUE2RED 3
 #define GREEN2RED 4
 #define RED2GREEN 5
-bool min,on=true;
-int pixel_x, pixel_y,num,x=20,y=20,Channel,Tempreture;     //Touch_getXY() updates global vars
+bool MIN,on=true,set;
+int pixel_x, pixel_y,num=0,x=20,y=20,Channel,Temperature;     //Touch_getXY() updates global vars
 int sec_counter,min_counter;
 bool Touch_getXY(void)
 {
@@ -88,8 +88,9 @@ void splash_screen()
 }
 void Main_page()
 { 
+    tft.setRotation(1);
     tft.fillScreen(BLACK);
-    btn_1.initButton(&tft, 50, 20, 80, 30, GREEN,GREEN, BLACK, "ON", 2);
+    btn_1.initButton(&tft, 65, 30, 80, 30, GREEN,GREEN, BLACK, "ON", 2);
     btn_2.initButton(&tft, 225, 50, 160, 40, CYAN, BLACK, CYAN, "TIME", 2);
     btn_3.initButton(&tft, 225, 100, 160, 40, CYAN, BLACK, CYAN, "CHANNEL", 2);
     btn_4.initButton(&tft, 225, 150, 160, 40, CYAN, BLACK, CYAN, "TEMP", 2);
@@ -121,10 +122,10 @@ void Main_page()
     tft.setTextSize(2);
     tft.setTextColor(WHITE);
     tft.setCursor(5,95);
-    tft.print(Read_Temp());
+    tft.print(Read_temp());
     tft.print(" Celcius");
     tft.setCursor(10,185);
-    tft.print(Read_Pressure());
+    tft.print(Read_pressure());
     tft.print(" Bars");
      bool down = Touch_getXY();
      btn_1.press(down && btn_1.contains(pixel_x, pixel_y));
@@ -138,7 +139,7 @@ void Main_page()
     {
       if(on==true)
        {
-       btn_1.initButton(&tft, 65, 30, 80, 30, RED,RED, BLACK, "OFF", 2);
+       btn_1.initButton(&tft, 65, 30, 80, 30, RED,BLACK,RED, "OFF", 2);
         btn_1.drawButton(true);
         on=false;
 
@@ -146,8 +147,9 @@ void Main_page()
        }
        else
        {
-         btn_1.initButton(&tft, 65, 30, 80, 30, GREEN,GREEN, BLACK, "ON", 2);
+         btn_1.initButton(&tft, 65, 30, 80, 30, GREEN,BLACK, GREEN, "ON", 2);
         btn_1.drawButton(true);
+        on=true;
         //Add Off code here//
        } 
      
@@ -182,9 +184,12 @@ void Main_page()
     }
     if (btn_6.justPressed()) {
       
-        //Serial.println("RESET");
         Channel=0;
-        Tempreture=0;min_counter=0;sec_counter=0;
+        Temperature=0;min_counter=0;sec_counter=0;
+        Serial.println(Temperature);
+        Serial.println(min_counter);
+        Serial.println(sec_counter);
+        Serial.println(Channel);
     }
   }
  
@@ -205,8 +210,9 @@ void calc_Values(int z)
   }
   
 }
-  int Temp_Channel_Values()
+  void Temp_Channel_Values(bool set)
 {   
+  num=0;
     while(1)
     {
      bool down = Touch_getXY();
@@ -222,7 +228,7 @@ void calc_Values(int z)
       btn[7].press(down&&btn[7].contains(pixel_x,pixel_y));
       btn[8].press(down&&btn[8].contains(pixel_x,pixel_y));
       btn[9].press(down&&btn[9].contains(pixel_x,pixel_y));
-      btn[10].press(down&&btn[0].contains(pixel_x,pixel_y));
+      btn[10].press(down&&btn[10].contains(pixel_x,pixel_y));
       btn[11].press(down&&btn[11].contains(pixel_x,pixel_y));
       btn[12].press(down&&btn[12].contains(pixel_x,pixel_y));
       btn[13].press(down&&btn[13].contains(pixel_x,pixel_y));
@@ -335,10 +341,31 @@ void calc_Values(int z)
     if (btn[9].justPressed()) {
         btn[9].drawButton(true);
         Serial.println(num);
-        tft.setCursor(20,40);
+        tft.setCursor(20,50);
         tft.setTextSize(2);
         tft.setTextColor(WHITE);
         tft.print("SET!!");
+        if(set==true)
+        {
+          Channel=num;
+          if(Channel>12)
+          {
+          tft.setCursor(20,50);
+          tft.setTextSize(2);
+          tft.setTextColor(WHITE);
+          tft.print("Wrong!!");
+          delay(3000);
+          Channel=0;
+          tft.fillRect(6, 6, 200,60, BLACK);
+          num=0;
+          }
+        }
+        else
+        {
+          Temperature=num;
+          num=0;
+        }
+        x=20;
     }
     if (btn[11].justPressed()) {
         btn[11].drawButton(true);
@@ -352,11 +379,13 @@ void calc_Values(int z)
         tft.setTextSize(3);
         tft.setTextColor(WHITE);
         tft.print("0");
+        calc_Values(0);
         x=x+20;
     }
     if (btn[12].justPressed()) {
         Main_page();
         return num;
+        x=20;
     }
   }
 }
@@ -399,8 +428,8 @@ void Time_Layout()
     bt[6].initButton(&tft,  40, 210, 60, 40, WHITE, CYAN, BLACK, "7", 2);
     bt[7].initButton(&tft, 110, 210, 60, 40, WHITE, CYAN, BLACK, "8", 2);
     bt[8].initButton(&tft, 180, 210, 60, 40, WHITE, CYAN, BLACK, "9", 2);
-    bt[10].initButton(&tft, 260, 210, 70,40, WHITE, CYAN, BLACK, "0", 2);
     bt[9].initButton(&tft, 260, 110, 70, 40, WHITE, CYAN, BLACK, "SET", 2);
+    bt[10].initButton(&tft, 260, 210, 70,40, WHITE, CYAN, BLACK, "0", 2);
     bt[11].initButton(&tft, 260, 160, 70, 40, RED, RED, BLACK, "CLR", 2);
     bt[12].initButton(&tft, 260, 60, 70, 40, BLUE, BLUE, BLACK, "BACK", 2);
     bt[13].initButton(&tft, 180, 20, 60, 40, WHITE, CYAN, BLACK, "MIN", 2);
@@ -415,6 +444,7 @@ void Time_Layout()
 }
 void Time_Values()
 {
+  
   while(1)
   {
      bool down = Touch_getXY();
@@ -430,7 +460,7 @@ void Time_Values()
       bt[7].press(down&&bt[7].contains(pixel_x,pixel_y));
       bt[8].press(down&&bt[8].contains(pixel_x,pixel_y));
       bt[9].press(down&&bt[9].contains(pixel_x,pixel_y));
-      bt[10].press(down&&bt[0].contains(pixel_x,pixel_y));
+      bt[10].press(down&&bt[10].contains(pixel_x,pixel_y));
       bt[11].press(down&&bt[11].contains(pixel_x,pixel_y));
       bt[12].press(down&&bt[12].contains(pixel_x,pixel_y));
       bt[13].press(down&&bt[13].contains(pixel_x,pixel_y));
@@ -551,26 +581,36 @@ void Time_Values()
    
     if (bt[9].justPressed()) {
         bt[9].drawButton(true);
-      
-      if(min==1)
+      if(MIN==1)
         {
           min_counter=num;
           Serial.println(min_counter);
+          tft.setCursor(20,50);
+        tft.setTextSize(2);
+        tft.setTextColor(WHITE);
+        tft.print("MIN SET!");
+        x=20;
         }
         else
         {
           sec_counter=num;
           Serial.println(sec_counter);
+          tft.setCursor(20,50);
+        tft.setTextSize(2);
+        tft.setTextColor(WHITE);
+        tft.print("SEC SET!");
+        x=20;
         }
+    }
       if (bt[10].justPressed()) {
         bt[10].drawButton(true);
         tft.setCursor(x,y);
         tft.setTextSize(3);
         tft.setTextColor(WHITE);
         tft.print("0");
+        calc_Values(0);
         x=x+20;
     }   
-    }
     if (bt[11].justPressed()) {
         bt[11].drawButton(true);
         tft.fillRect(6, 6, 138,68, BLACK);
@@ -580,21 +620,22 @@ void Time_Values()
      if (bt[12].justPressed()) {
         bt[12].drawButton(true);
         Main_page();
+        x=20;
     }
     if (bt[13].justPressed()) {
         bt[13].drawButton(true);
         num=0;
-        min=true;
-        Serial.println("Min");
+        MIN=true;
+        //Serial.println("Min");
         tft.fillRect(6, 6, 138,68, BLACK);
         x=15;
     }
     if (bt[14].justPressed()) {
         bt[14].drawButton(true);
-        Serial.println("Sec");
+        //Serial.println("Sec");
        tft.fillRect(6, 6, 138,68, BLACK);
        num=0;
-       min=false;
+       MIN=false;
        x=15;
     }
   }
@@ -655,7 +696,7 @@ int ringMeter(int value, int vmin, int vmax, int x, int y, int r, char *units, b
   char buf[10];
   byte len = 2; if (value > 999) len = 4;
   dtostrf(value, len, 0, buf);
-  buf[len] = ' '; buf[len] = 0; // Add blanking space and terminator, helps to centre text too!
+  buf[len] = ' '; buf[len] = 0; 
   // Set the text colour to default
   tft.setTextSize(1);
 
@@ -667,12 +708,7 @@ int ringMeter(int value, int vmin, int vmax, int x, int y, int r, char *units, b
   tft.setTextColor(colour,BLACK);
   tft.setCursor(x-20,y-15);tft.setTextSize(4);
   tft.print(buf);}
-
   tft.setTextColor(WHITE,BLACK);
-  
- 
-  
-  // Calculate and return right hand side x coordinate
   return x + r;
 }
 
@@ -751,6 +787,7 @@ tft.fillScreen(BLACK); //Set Background Color with BLACK
     tft.setTextSize (3);
     tft.setTextColor (WHITE,BLACK);
     tft.print ("CHANNEL:");
+    tft.print(Channel);
    
     tft.fillRect(98,203,80,30,BLACK);
     tft.setCursor(172,200);
@@ -758,7 +795,7 @@ tft.fillScreen(BLACK); //Set Background Color with BLACK
     tft.setTextColor(RED);
     tft.print(":");
     tft.fillRect(190,203,80,30,BLACK);
-    
+    Timer_Countdown();
 }
 void Timer_Countdown()
 {
@@ -767,21 +804,25 @@ void Timer_Countdown()
    int xpos = 15, ypos = 5, gap = 100, radius = 60;
     ringMeter(30,0,100, xpos,ypos,radius,"Celsius",GREEN2RED); // Draw analogue meter
     xpos=180;ypos=5;
-   ringMeter(80,0,100, xpos,ypos,radius,"Bar",GREEN2RED); // Draw analogue meter 
+   ringMeter(80,0,100, xpos,ypos,radius,"Bar",GREEN2RED); // Draw analogue meter //
 // Code that runs during the countdown//
+
+
    
    bool down=Touch_getXY();
  btn_Stop.press(down&&btn_Stop.contains(pixel_x,pixel_y));
 if (btn_Stop.justReleased())
        btn_Stop.drawButton();
- if (btn_Stop.justPressed()) {
+ else if (btn_Stop.justPressed())
+    {
       Main_page();
- }
+      Channel=0;min_counter=0;sec_counter=0;
+    }
   }
 }
 void Time() {
-  // put your main code here, to run repeatedly:
-if(sec_counter==0)
+  // Interrupt Countdown//
+if(sec_counter==0&&min_counter!=0)
 {
   min_counter=min_counter-1;
   sec_counter=60;
@@ -792,6 +833,7 @@ if(min_counter==0&&sec_counter==0)
   Timer1.stop();
   //Serial.println("Over");
   Main_page();
+  Channel=0;min_counter=0;sec_counter=0;
 }
   tft.setTextSize(3);
   tft.setTextColor(RED);
@@ -834,13 +876,27 @@ if(min_counter==0&&sec_counter==0)
 }
 void set_Temp()
 {
+  set=false;
   Temp_Channel_Layout();
- Tempreture=Temp_Channel_Values();
+  Temp_Channel_Values(set);
+  if(Channel>12)
+  {
+       tft.setCursor(20,50);
+        tft.setTextSize(2);
+        tft.setTextColor(WHITE);
+        tft.print("WRONG VAL");
+        delay(3000);
+        Channel=0;
+        tft.fillRect(6, 6, 200,60, BLACK);
+        x=20;
+       Temp_Channel_Values(set);
+  }
 }
 void set_Channel()
 {
+  set=true;
  Temp_Channel_Layout();
-Channel= Temp_Channel_Values();
+ Temp_Channel_Values(set);
 }
 void set_Time()
 {
@@ -859,9 +915,9 @@ void setup() {
     Serial.print("TFT ID = 0x");
     Serial.println(ID, HEX);
     Serial.println("Calibrate for your Touch Panel");
-    if (ID == 0xD3D3) ID = 0x9486; // write-only shield
+    if (ID == 0xD3D3) ID = 0x9486; 
     tft.begin(ID);
-    tft.setRotation(1);            //PORTRAIT
+    tft.setRotation(1);            //Landscape
     splash_screen();
     tft.fillScreen(BLACK);
     Main_page();
