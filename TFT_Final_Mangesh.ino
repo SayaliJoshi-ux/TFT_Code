@@ -5,7 +5,18 @@
 MCUFRIEND_kbv tft;
 #define MINPRESSURE 200
 #define MAXPRESSURE 1000
-
+#define channel1 30
+#define channel2 31
+#define channel3 32
+#define channel4 33
+#define channel5 34
+#define channel6 35
+#define channel7 36
+#define channel8 37
+#define channel9 38
+#define channel10 39
+#define channel11 40
+#define channel12 41
 // ALL Touch panels and wiring is DIFFERENT
 // copy-paste results from TouchScreen_Calibr_native.ino
 #define LCD_CS A3 // Chip Select goes to Analog 3
@@ -13,8 +24,9 @@ MCUFRIEND_kbv tft;
 #define LCD_WR A1 // LCD Write goes to Analog 1
 #define LCD_RD A0 // LCD Read goes to Analog 0
 #define LCD_RESET A4 // Can alternately just connect to Arduino's reset pin
+// pins for channel from 30-41//
 const int XP = 6, XM = A2, YP = A1, YM = 7; //ID=0x9341
-Adafruit_GFX_Button btn_6, btn_5,btn_1,btn_2,btn_3,btn_4,btn[13],bt[15],btn_Stop;
+Adafruit_GFX_Button btn_6, btn_5,btn_1,btn_2,btn_3,btn_4,btn[13],bt[15],bt_ch[18],btn_Stop;
 TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 #define BLACK   0x0000
 #define BLUE    0x001F
@@ -31,9 +43,9 @@ TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 #define BLUE2RED 3
 #define GREEN2RED 4
 #define RED2GREEN 5
-bool MIN,on=true,set;
-int pixel_x, pixel_y,num=0,x=20,y=20,Channel,Temperature;     //Touch_getXY() updates global vars
-int sec_counter,min_counter;
+bool MIN,on=true,recorded[12]={false};
+int pixel_x, pixel_y,num=0,x=20,y=20,Temperature,channel_count=0;     //Touch_getXY() updates global vars
+int sec_counter,min_counter,channel[12];
 bool Touch_getXY(void)
 {
     TSPoint p = ts.getPoint();
@@ -54,7 +66,8 @@ int Read_temp()
 }
 int Read_pressure()
 {
-  //Pressure_reading code
+// pressure_val=analogRead(A15);
+ //return pressure_val;
 }
 void splash_screen()
 {
@@ -179,17 +192,10 @@ void Main_page()
         set_Temp();
     }
     if (btn_5.justPressed()) {
-    
         Start_Timer();
     }
     if (btn_6.justPressed()) {
-      
-        Channel=0;
-        Temperature=0;min_counter=0;sec_counter=0;
-        Serial.println(Temperature);
-        Serial.println(min_counter);
-        Serial.println(sec_counter);
-        Serial.println(Channel);
+        Temperature=0;min_counter=0;sec_counter=0,channel_count=0;
     }
   }
  
@@ -210,7 +216,262 @@ void calc_Values(int z)
   }
   
 }
-  void Temp_Channel_Values(bool set)
+void Channel_Layout()
+{
+    tft.fillScreen(BLACK);
+    tft.setRotation(1);    
+    bt_ch[0].initButton(&tft, 40,  60, 60, 40, WHITE, CYAN, BLACK, "1", 2);
+    bt_ch[1].initButton(&tft, 110, 60, 60, 40, WHITE, CYAN, BLACK, "2", 2);
+    bt_ch[2].initButton(&tft,  180, 60, 60, 40, WHITE, CYAN, BLACK, "3", 2); 
+    bt_ch[3].initButton(&tft,   40, 110, 60, 40, WHITE, CYAN, BLACK, "4", 2);
+    bt_ch[4].initButton(&tft, 110,110 , 60, 40, WHITE, CYAN, BLACK, "5", 2);
+    bt_ch[5].initButton(&tft, 180, 110, 60, 40, WHITE, CYAN, BLACK, "6", 2);
+    bt_ch[6].initButton(&tft, 40, 160, 60, 40, WHITE, CYAN, BLACK, "7", 2);
+    bt_ch[7].initButton(&tft,110, 160, 60, 40, WHITE, CYAN, BLACK, "8", 2);
+    bt_ch[8].initButton(&tft, 180, 160, 60, 40, WHITE, CYAN, BLACK, "9", 2);
+    bt_ch[9].initButton(&tft,  40, 210, 60, 40, WHITE, CYAN, BLACK, "10", 2);
+    bt_ch[10].initButton(&tft, 110, 210, 60, 40, WHITE, CYAN, BLACK, "11", 2);
+    bt_ch[11].initButton(&tft,180, 210, 60, 40, WHITE, CYAN, BLACK, "12", 2);
+    bt_ch[12].initButton(&tft, 260, 60, 70, 40, BLUE,  BLUE,  BLACK, "BACK", 2);
+    bt_ch[13].initButton(&tft, 260, 110, 70, 40, WHITE,CYAN, BLACK,"SET", 2);
+    bt_ch[14].initButton(&tft, 260, 160, 70, 40, RED, RED, BLACK, "CLR", 2);
+    
+    int count=0;
+    while(count<15)
+    {
+      bt_ch[count].drawButton(false);
+      count=count+1;
+    }
+   
+}
+void Channel_Values()
+{   
+    while(1)
+    {
+     bool down = Touch_getXY();
+      
+      bt_ch[0].press(down&&bt_ch[0].contains(pixel_x,pixel_y));
+      bt_ch[1].press(down&&bt_ch[1].contains(pixel_x,pixel_y));
+      bt_ch[2].press(down&&bt_ch[2].contains(pixel_x,pixel_y));
+      bt_ch[3].press(down&&bt_ch[3].contains(pixel_x,pixel_y));
+      bt_ch[4].press(down&&bt_ch[4].contains(pixel_x,pixel_y));
+      bt_ch[5].press(down&&bt_ch[5].contains(pixel_x,pixel_y));
+      bt_ch[6].press(down&&bt_ch[6].contains(pixel_x,pixel_y));
+      bt_ch[7].press(down&&bt_ch[7].contains(pixel_x,pixel_y));
+      bt_ch[8].press(down&&bt_ch[8].contains(pixel_x,pixel_y));
+      bt_ch[9].press(down&&bt_ch[9].contains(pixel_x,pixel_y));
+      bt_ch[10].press(down&&bt_ch[10].contains(pixel_x,pixel_y));
+      bt_ch[11].press(down&&bt_ch[11].contains(pixel_x,pixel_y));
+      bt_ch[12].press(down&&bt_ch[12].contains(pixel_x,pixel_y));
+      bt_ch[13].press(down&&bt_ch[13].contains(pixel_x,pixel_y));
+      bt_ch[14].press(down&&bt_ch[14].contains(pixel_x,pixel_y));
+
+      if(bt_ch[0].justReleased())
+        bt_ch[0].drawButton();
+      if(bt_ch[1].justReleased())
+        bt_ch[1].drawButton();
+      if(bt_ch[2].justReleased())
+        bt_ch[2].drawButton();
+      if(bt_ch[3].justReleased())
+        bt_ch[3].drawButton();
+      if(bt_ch[4].justReleased())
+        bt_ch[4].drawButton();
+      if(bt_ch[5].justReleased())
+        bt_ch[5].drawButton();
+      if(bt_ch[6].justReleased())
+        bt_ch[6].drawButton();
+       if(btn[7].justReleased())
+        bt_ch[7].drawButton();
+       if(bt_ch[8].justReleased())
+        bt_ch[8].drawButton();
+        if(bt_ch[9].justReleased())
+        bt_ch[9].drawButton();
+      if(bt_ch[10].justReleased())
+        bt_ch[10].drawButton();   
+      if (btn[11].justReleased())
+        bt_ch[11].drawButton();
+       if(bt_ch[12].justReleased())
+        bt_ch[12].drawButton();
+      if(bt_ch[13].justReleased())
+        bt_ch[13].drawButton();   
+      if (btn[14].justReleased())
+        btn[14].drawButton();
+  
+    if (bt_ch[0].justPressed()) {
+      if(recorded[0]==false)
+      {
+      bt_ch[0].initButton(&tft, 40,  60, 60, 40, GREEN, GREEN, BLACK, "1", 2);
+       bt_ch[0].drawButton(true);
+       channel[channel_count]=channel1;
+         channel_count=channel_count+1;
+         recorded[0]=true;
+      }
+    }
+    if (bt_ch[1].justPressed()) {
+      if(recorded[1]==false)
+      {
+        bt_ch[1].initButton(&tft, 110, 60, 60, 40, GREEN, GREEN, BLACK, "2", 2);
+        bt_ch[1].drawButton(true);
+        channel[channel_count]=channel2;
+         channel_count=channel_count+1;
+            recorded[1]=true;
+      }
+    
+    }
+    if (bt_ch[2].justPressed()) {
+      if(recorded[2]==false)
+      {
+         bt_ch[2].initButton(&tft,  180, 60, 60, 40, GREEN, GREEN, BLACK, "3", 2); 
+        bt_ch[2].drawButton(true);
+        channel[channel_count]=channel3;
+         channel_count=channel_count+1;
+               recorded[2]=true;
+      }
+    }
+    if (bt_ch[3].justPressed()) {
+      if(recorded[3]==false)
+      {
+          bt_ch[3].initButton(&tft,   40, 110, 60, 40, GREEN, GREEN, BLACK, "4", 2);
+        bt_ch[3].drawButton(true);
+        channel[channel_count]=channel4;
+         channel_count=channel_count+1;
+                   recorded[3]=true;
+      }
+  
+    }
+    if (bt_ch[4].justPressed()) {
+      if(recorded[4]==false)
+      {
+         bt_ch[4].initButton(&tft, 110,110 , 60, 40, GREEN, GREEN, BLACK, "5", 2);
+        bt_ch[4].drawButton(true);
+        channel[channel_count]=channel5;
+         channel_count=channel_count+1;
+         recorded[4]=true;
+      }
+     
+    }
+    if (bt_ch[5].justPressed()) {
+      if(recorded[5]==false)
+      {
+        bt_ch[5].initButton(&tft, 180, 110, 60, 40, GREEN, GREEN, BLACK, "6", 2);
+       bt_ch[5].drawButton(true);
+       channel[channel_count]=channel6;
+         channel_count=channel_count+1;
+         recorded[5]=true;
+      }
+
+    }
+        
+    if(bt_ch[6].justPressed()) {
+       if(recorded[6]==false)
+      {
+          bt_ch[6].initButton(&tft, 40, 160, 60, 40, GREEN, GREEN, BLACK, "7", 2);
+          bt_ch[6].drawButton(true);
+        channel[channel_count]=channel7;
+         channel_count=channel_count+1;
+             recorded[6]=true;
+      }
+
+     
+    }
+    if (bt_ch[7].justPressed()) {
+        if(recorded[7]==false)
+      {
+        bt_ch[7].initButton(&tft,110, 160, 60, 40, GREEN, GREEN, BLACK, "8", 2);
+        bt_ch[7].drawButton(false);
+        channel[channel_count]=channel8;
+         channel_count=channel_count+1;
+                  recorded[7]=true;
+      }
+
+    }
+    if (bt_ch[8].justPressed()) {
+        if(recorded[8]==false)
+      {
+       bt_ch[8].initButton(&tft, 180, 160, 60, 40, GREEN, GREEN, BLACK, "9", 2);
+       bt_ch[8].drawButton(true);
+       channel[channel_count]=channel9;
+       channel_count=channel_count+1;
+       recorded[8]=true;
+      }
+   
+    }
+   
+    if (bt_ch[9].justPressed()) {
+        if(recorded[9]==false)
+      {
+        bt_ch[9].drawButton(true);
+      bt_ch[9].initButton(&tft,  40, 210, 60, 40, GREEN, GREEN, BLACK, "10", 2);
+       bt_ch[9].drawButton(true);
+       channel[channel_count]=channel10;
+        channel_count=channel_count+1;
+        recorded[9]=true;
+      }
+
+    }
+    if (bt_ch[10].justPressed()) {
+           if(recorded[10]==false)
+      {
+        bt_ch[10].initButton(&tft, 110, 210, 60, 40, GREEN, GREEN, BLACK, "11", 2);
+        bt_ch[10].drawButton(false);
+       channel[channel_count]=channel11;
+        channel_count=channel_count+1;
+           recorded[10]=true;
+      }
+    }
+    if (bt_ch[11].justPressed()) {
+            if(recorded[11]==false)
+      {
+  bt_ch[11].initButton(&tft,180, 210, 60, 40, GREEN, GREEN, BLACK, "12", 2);
+     bt_ch[11].drawButton(false);
+       channel[channel_count]=channel12;
+        channel_count=channel_count+1;
+             recorded[11]=true;
+      }
+    }
+    if (bt_ch[12].justPressed()) {
+        Main_page();
+    }
+     if (bt_ch[13].justPressed()) {
+        tft.setCursor(10,20);
+        tft.setTextSize(2);
+        tft.setTextColor(RED);
+        tft.print("SET!!");
+    }
+     if (bt_ch[14].justPressed()) {
+           bt_ch[14].drawButton(true);
+   bt_ch[0].initButton(&tft, 40,  60, 60, 40, WHITE, CYAN, BLACK, "1", 2);
+    bt_ch[1].initButton(&tft, 110, 60, 60, 40, WHITE, CYAN, BLACK, "2", 2);
+    bt_ch[2].initButton(&tft,  180, 60, 60, 40, WHITE, CYAN, BLACK, "3", 2); 
+    bt_ch[3].initButton(&tft,   40, 110, 60, 40, WHITE, CYAN, BLACK, "4", 2);
+    bt_ch[4].initButton(&tft, 110,110 , 60, 40, WHITE, CYAN, BLACK, "5", 2);
+    bt_ch[5].initButton(&tft, 180, 110, 60, 40, WHITE, CYAN, BLACK, "6", 2);
+    bt_ch[6].initButton(&tft, 40, 160, 60, 40, WHITE, CYAN, BLACK, "7", 2);
+    bt_ch[7].initButton(&tft,110, 160, 60, 40, WHITE, CYAN, BLACK, "8", 2);
+    bt_ch[8].initButton(&tft, 180, 160, 60, 40, WHITE, CYAN, BLACK, "9", 2);
+    bt_ch[9].initButton(&tft,  40, 210, 60, 40, WHITE, CYAN, BLACK, "10", 2);
+    bt_ch[10].initButton(&tft, 110, 210, 60, 40, WHITE, CYAN, BLACK, "11", 2);
+    bt_ch[11].initButton(&tft,180, 210, 60, 40, WHITE, CYAN, BLACK, "12", 2);
+    int m=0;
+      while(m<12)
+      {
+        channel[m]=0;
+         bt_ch[m].drawButton(false);
+         m++;
+      }
+      channel_count=0;
+      m=0;
+      while(m<12)
+      {
+        recorded[m]=false;
+        m++;
+      }
+      Serial.println(channel_count);
+      tft.fillRect(5,5,100,30,BLACK);
+    }
+  }
+}
+  void Temp_Values()
 {   
   num=0;
     while(1)
@@ -347,27 +608,9 @@ void calc_Values(int z)
         tft.setTextSize(2);
         tft.setTextColor(WHITE);
         tft.print("SET!!");
-        if(set==true)
-        {
-          Channel=num;
-          if(Channel>12)
-          {
-          tft.setCursor(20,50);
-          tft.setTextSize(2);
-          tft.setTextColor(WHITE);
-          tft.print("###");
-          delay(3000);
-          Channel=0;
-          tft.fillRect(6, 6, 200,60, BLACK);
-          num=0;
-          }
-        }
-        else
-        {
           Temperature=num;
           num=0;
-        }
-        x=20;
+          x=20;
     }
     if (btn[11].justPressed()) {
         btn[11].drawButton(true);
@@ -386,12 +629,11 @@ void calc_Values(int z)
     }
     if (btn[12].justPressed()) {
         Main_page();
-        return num;
         x=20;
     }
   }
 }
-void Temp_Channel_Layout()
+void Temp_Layout()
 {
     tft.fillScreen(BLACK);
     tft.setRotation(1);    
@@ -513,7 +755,7 @@ void Time_Values()
         tft.setTextSize(3);
         tft.setTextColor(WHITE);
         tft.print("2");
-     calc_Values(2);
+        calc_Values(2);
         x=x+20;
     }
     if (bt[2].justPressed()) {
@@ -628,13 +870,11 @@ void Time_Values()
         bt[13].drawButton(true);
         num=0;
         MIN=true;
-        //Serial.println("Min");
         tft.fillRect(6, 6, 138,68, BLACK);
         x=15;
     }
     if (bt[14].justPressed()) {
         bt[14].drawButton(true);
-        //Serial.println("Sec");
        tft.fillRect(6, 6, 138,68, BLACK);
        num=0;
        MIN=false;
@@ -753,10 +993,33 @@ unsigned int rainbow(byte value)
 float sineWave(int phase) {
   return sin(phase * 0.0174532925);
 }
+void Channel_Start()
+{
+  int z=0;
+  while(z<(channel_count))
+  {
+   pinMode(channel[z],OUTPUT); 
+   digitalWrite(channel[z],HIGH);
+    z=z+1;
+  }
+}
+void Channel_Stop()
+{
+  int z=0;
+  while(z<(channel_count))
+  {
+    digitalWrite(channel[z],LOW);
+    channel[z]=0;
+    z=z+1;
+  }
+  channel_count=0;
+  
+}
 void Timer_Layout()
 {
   Timer1.initialize(1000000);
   Timer1.attachInterrupt(Time);
+  Channel_Start();
   tft.setRotation(1); // Set Rotation at 0 degress (default)
 tft.fillScreen(BLACK); //Set Background Color with BLACK
  btn_Stop.initButton(&tft, 280, 160, 60, 50, RED, BLACK, RED, "STOP", 2);
@@ -789,8 +1052,7 @@ tft.fillScreen(BLACK); //Set Background Color with BLACK
     tft.setTextSize (3);
     tft.setTextColor (WHITE,BLACK);
     tft.print ("CHANNEL:");
-    tft.print(Channel);
-   
+    tft.print(channel_count);
     tft.fillRect(98,203,80,30,BLACK);
     tft.setCursor(172,200);
     tft.setTextSize(5);
@@ -803,10 +1065,9 @@ void Timer_Countdown()
 {
   while(1)
   {
-   int xpos = 15, ypos = 5, gap = 100, radius = 60;
-    ringMeter(30,0,100, xpos,ypos,radius,"Celsius",GREEN2RED); // Draw analogue meter
-    xpos=180;ypos=5;
-   ringMeter(80,0,100, xpos,ypos,radius,"Bar",GREEN2RED); // Draw analogue meter //
+    ringMeter(30,0,100, 15,5,60,"Celsius",GREEN2RED); // Draw analogue meter
+   //value,range,xpos,ypos,radius
+   ringMeter(80,0,100, 180,5,60,"Bar",GREEN2RED); // Draw analogue meter //
 // Code that runs during the countdown//
 
 
@@ -817,10 +1078,12 @@ if (btn_Stop.justReleased())
        btn_Stop.drawButton();
  if (btn_Stop.justPressed())
     {
+      Channel_Stop();
+      min_counter=0;sec_counter=0,channel_count=0;
       Timer1.stop();
       tft.fillScreen(BLACK);
       Main_page();
-      Channel=0;min_counter=0;sec_counter=0;
+     
 //Code for stop button//
       
     }
@@ -836,10 +1099,12 @@ if(sec_counter==0&&min_counter!=0)
 sec_counter=sec_counter-1;
 if(min_counter==0&&sec_counter==0)
 {
+  Channel_Stop();
+  min_counter=0;sec_counter=0;
   Timer1.stop();
-  //Serial.println("Over");
   Main_page();
-  Channel=0;min_counter=0;sec_counter=0;
+  
+ 
 }
   tft.setTextSize(3);
   tft.setTextColor(RED);
@@ -882,27 +1147,15 @@ if(min_counter==0&&sec_counter==0)
 }
 void set_Temp()
 {
-  set=false;
-  Temp_Channel_Layout();
-  Temp_Channel_Values(set);
-  if(Channel>12)
-  {
-       tft.setCursor(20,50);
-        tft.setTextSize(2);
-        tft.setTextColor(WHITE);
-        tft.print("WRONG VAL");
-        delay(3000);
-        Channel=0;
-        tft.fillRect(6, 6, 200,60, BLACK);
-        x=20;
-       Temp_Channel_Values(set);
-  }
+  Temp_Layout();
+  Temp_Values();
+  
 }
 void set_Channel()
 {
-  set=true;
- Temp_Channel_Layout();
- Temp_Channel_Values(set);
+  
+ Channel_Layout();
+ Channel_Values();
 }
 void set_Time()
 {
